@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel ART Armory & Cart</title>
+    <style>
+        :root {
+            --deep-sea: #010a15;
+            --midnight-blue: #06182c;
+            --biolumin-cyan: #00ffff;
+            --biolumin-green: #00fa9a;
+            --alert-red: #ff3366;
+            --text-glow: 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+
+        body {
+            background-color: var(--deep-sea);
+            color: #8ab4f8;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-1000px) scale(2); opacity: 0; }
+        }
+
+        .pixel-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .pixel-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pixel-card {
+            background: var(--midnight-blue);
+            padding: 25px;
+            border: 4px solid var(--biolumin-cyan);
+            box-shadow: 
+                8px 8px 0px rgba(0, 0, 0, 0.8),
+                inset 0 0 15px rgba(0, 255, 255, 0.1);
+        }
+
+        h2 {
+            color: var(--biolumin-cyan);
+            text-shadow: var(--text-glow);
+            text-transform: uppercase;
+            font-size: 28px;
+            margin-top: 0;
+            border-bottom: 2px dashed #1a4b6e;
+            padding-bottom: 10px;
+        }
+
+        .product-item, .cart-item, .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1a4b6e;
+            padding: 10px 0;
+        }
+
+        .history-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .cart-total-section {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 2px dashed var(--biolumin-green);
+            font-size: 24px;
+            color: var(--biolumin-green);
+        }
+
+        .strikethrough {
+            text-decoration: line-through;
+            color: var(--alert-red);
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            color: var(--biolumin-green);
+            margin-bottom: 5px;
+            font-size: 22px;
+        }
+
+        input, textarea {
+            background-color: var(--deep-sea);
+            color: var(--biolumin-cyan);
+            border: 2px solid #1a4b6e;
+            padding: 10px;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            outline: none;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--biolumin-cyan);
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+        }
+
+        button {
+            background-color: var(--deep-sea);
+            color: var(--biolumin-green);
+            border: 2px solid var(--biolumin-green);
+            padding: 8px 15px;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.1s;
+        }
+        button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #000;
+        }
+        button:hover {
+            background-color: var(--biolumin-green);
+            color: var(--deep-sea);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(1, 10, 21, 0.9);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            width: 400px;
+            max-width: 90%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bubbles b1"></div>
+    <div class="bubbles b2"></div>
+    <div class="bubbles b3"></div>
+    <div class="bubbles b4"></div>
+
+    <div class="pixel-container">
+
+        <div class="column">
+            <div class="pixel-card">
+                <h2>Troy Company Pixel Store</h2>
+                <div id="productList">
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="pixel-card">
+                <h2>KERANJANG (>_ )</h2>
+                <div id="cartList">
+                    <p>Keranjang masih kosong...</p>
+                </div>
+                
+                <div class="cart-total-section">
+                    <span>TOTAL:</span>
+                    <div id="cartTotal">Rp 0</div>
+                </div>
+                
+                <br>
+                <button id="btnCheckout" style="width: 100%; display: none;">[ CHECKOUT SEKARANG ]</button>
+            </div>
+
+            <div class="pixel-card">
+                <h2>RIWAYAT TRANSAKSI</h2>
+                <div id="historyList">
+                </div>
+                <button id="btnClearHistory" style="margin-top: 20px; width: 100%; border-color: var(--alert-red); color: var(--alert-red); display: none;">[ HAPUS SEMUA RIWAYAT ]</button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="pixel-card modal-content">
+            <h2>DATA PEMBELI</h2>
+            <form id="checkoutForm">
+                <div class="form-group">
+                    <label for="coNama">NAMA_ENTITAS:</label>
+                    <input type="text" id="coNama" autocomplete="off" placeholder="Nama lengkap...">
+                </div>
+                <div class="form-group">
+                    <label for="coNoHp">KODE_KOMUNIKASI (HP):</label>
+                    <input type="number" id="coNoHp" autocomplete="off" placeholder="08123456789">
+                </div>
+                <div class="form-group">
+                    <label for="coAlamat">KOORDINAT_LOKASI:</label>
+                    <textarea id="coAlamat" rows="3" placeholder="Alamat lengkap..."></textarea>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                    <button type="button" id="btnBatal" style="border-color: var(--alert-red); color: var(--alert-red);">[ BATAL ]</button>
+                    <button type="submit">[ PROSES PESANAN ]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const produk = [
+            { id: 1, nama: 'Pixel Nerf Gun', harga: 85000 },
+            { id: 2, nama: 'Biolumin Ammo x50', harga: 30000 },
+            { id: 3, nama: 'Deep Sea Armor', harga: 150000 },
+            { id: 4, nama: 'Retro Goggle', harga: 55000 }
+        ];
+
+        let cart = [];
+
+        const productListEl = document.getElementById('productList');
+        produk.forEach(p => {
+            productListEl.innerHTML += `
+                <div class="product-item">
+                    <div>
+                        <strong>${p.nama}</strong><br>
+                        <span>Rp ${p.harga.toLocaleString('id-ID')}</span>
+                    </div>
+                    <button onclick="addToCart(${p.id})">[ + ADD ]</button>
+                </div>
+            `;
+        });
+
+        function addToCart(id) {
+            const item = produk.find(p => p.id === id);
+            const cartItem = cart.find(c => c.id === id);
+            
+            if (cartItem) {
+                cartItem.qty += 1;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartListEl = document.getElementById('cartList');
+            const cartTotalEl = document.getElementById('cartTotal');
+            const btnCheckout = document.getElementById('btnCheckout');
+
+            if (cart.length === 0) {
+                cartListEl.innerHTML = '<p>Keranjang masih kosong...</p>';
+                cartTotalEl.innerHTML = 'Rp 0';
+                btnCheckout.style.display = 'none';
+                return;
+            }
+
+            cartListEl.innerHTML = '';
+            cart.forEach(c => {
+                cartListEl.innerHTML += `
+                    <div class="cart-item">
+                        <span>${c.nama} (x${c.qty})</span>
+                        <span>Rp ${(c.harga * c.qty).toLocaleString('id-ID')}</span>
+                    </div>
+                `;
+            });
+
+            let totalHarga = cart.reduce((sum, item) => sum + (item.harga * item.qty), 0);
+            
+            if (totalHarga > 100000) {
+                const diskon = totalHarga * 0.1;
+                const hargaFinal = totalHarga - diskon;
+                
+                cartTotalEl.innerHTML = `
+                    <span class="strikethrough">Rp ${totalHarga.toLocaleString('id-ID')}</span><br>
+                    <span>Rp ${hargaFinal.toLocaleString('id-ID')}</span>
+                    <div style="font-size: 16px;">(Diskon 10% Diterapkan!)</div>
+                `;
+            } else {
+                cartTotalEl.innerHTML = `Rp ${totalHarga.toLocaleString('id-ID')}`;
+            }
+
+            btnCheckout.style.display = 'block';
+        }
+
+        const historyListEl = document.getElementById('historyList');
+        const btnClearHistory = document.getElementById('btnClearHistory');
+
+        function renderRiwayat() {
+            const riwayat = JSON.parse(localStorage.getItem('riwayat_pembelian')) || [];
+
+            if (riwayat.length === 0) {
+                historyListEl.innerHTML = '<p style="color: #5b7c99;">Belum ada transmisi data / transaksi...</p>';
+                btnClearHistory.style.display = 'none';
+                return;
+            }
+
+            historyListEl.innerHTML = '';
+            // Tampilkan dari yang paling baru di atas
+            [...riwayat].reverse().forEach((r, index) => {
+                historyListEl.innerHTML += `
+                    <div class="history-item">
+                        <strong style="color: var(--biolumin-cyan); font-size: 22px;">#TRX-${riwayat.length - index} : ${r.nama_pembeli}</strong>
+                        <span style="font-size: 18px;">Waktu: ${r.tanggal}</span>
+                        <span style="font-size: 18px;">Total Item: ${r.qty} unit</span>
+                        <strong style="color: var(--biolumin-green);">Total Bayar: Rp ${r.total.toLocaleString('id-ID')}</strong>
+                    </div>
+                `;
+            });
+            btnClearHistory.style.display = 'block';
+        }
+
+        function simpanRiwayat(nama, total, qty) {
+            const riwayat = JSON.parse(localStorage.getItem('riwayat_pembelian')) || [];
+            riwayat.push({ 
+                nama_pembeli: nama,
+                tanggal: new Date().toLocaleString('id-ID'), 
+                total: total, 
+                qty: qty 
+            });
+            localStorage.setItem('riwayat_pembelian', JSON.stringify(riwayat));
+            renderRiwayat();
+        }
+
+        btnClearHistory.addEventListener('click', () => {
+            if (confirm("[ PERINGATAN ]\nApakah Anda yakin ingin menghapus semua riwayat transmisi?")) {
+                localStorage.removeItem('riwayat_pembelian');
+                renderRiwayat();
+            }
+        });
+
+        window.onload = renderRiwayat;
+
+        const modal = document.getElementById('checkoutModal');
+        const checkoutForm = document.getElementById('checkoutForm');
+
+        document.getElementById('btnCheckout').addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+        document.getElementById('btnBatal').addEventListener('click', () => {
+            modal.style.display = 'none';
+            checkoutForm.reset();
+        });
+
+        checkoutForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const nama = document.getElementById('coNama').value.trim();
+            const noHp = document.getElementById('coNoHp').value.trim();
+            const alamat = document.getElementById('coAlamat').value.trim();
+
+            if (nama === '' || noHp === '' || alamat === '') {
+                alert("[ ERROR ] - Transmisi gagal! Data belum lengkap.");
+                return;
+            }
+
+            let totalHarga = cart.reduce((sum, item) => sum + (item.harga * item.qty), 0);
+            let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            
+            if (totalHarga > 100000) {
+                totalHarga -= (totalHarga * 0.1); 
+            }
+
+            simpanRiwayat(nama, totalHarga, totalQty);
+
+            alert(`[ BERHASIL ]\nPesanan atas nama ${nama} berhasil disimpan ke Riwayat Transaksi!`);
+            
+            cart = [];
+            updateCartUI();
+            checkoutForm.reset();
+            modal.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
