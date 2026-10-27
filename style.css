@@ -1,4 +1,3 @@
-/* ===== 1. Warna ===== Variabel CSS: ubah warna cukup di sini saja. */
 :root {
     --latar: #95bede;
     --kartu: #ffffff;
@@ -7,7 +6,6 @@
     --aksen: #0f2976;
 }
 
-/* Saat body diberi class "gelap" oleh JavaScript, warna berganti */
 body.gelap {
     --latar: #2884cb;
     --kartu: #1b2623;
